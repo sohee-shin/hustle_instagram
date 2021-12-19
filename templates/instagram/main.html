@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    {% load static %}
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+      <style>
+          .box {
+              width: 50px;
+              height: 50px;
+              border-radius: 70%;
+              overflow: hidden;
+          }
+      </style>
+
+    <!-- 구글 머티리얼 아이콘 -->
+      <link
+        href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Two+Tone|Material+Icons+Round|Material+Icons+Sharp"
+        rel="stylesheet">
+    <!-- Jqurey 사용하기 -->
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+      <title>InstagramFeed</title>
+  </head>
+  <body>
+
+  <nav class="navbar navbar-expand-lg navbar-light bg-light" style="position: fixed; width: 100%">
+      <div class="container-fluid">
+          <a class="navbar-brand" href="#">Navbar</a>
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+              <form class="d-flex">
+                  <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                  <button class="btn btn-outline-success" type="submit">Search</button>
+              </form>
+          </div>
+
+          <div style="display: flex; flex-direction: row">
+              <span class="material-icons">home</span>
+              <span class="material-icons-outlined">send</span>
+              <span class="material-icons-outlined" data-bs-toggle="modal" data-bs-target="#exampleModal"
+                    style="cursor: pointer">
+                  add_box
+              </span>
+              <span class="material-icons-outlined">explore</span>
+              <span class="material-icons-outlined">favorite_border</span>
+              <div style="width: 30px;height: 30px;border-radius: 70%;overflow: hidden;">
+              <img style="width: 100%; height: 100%"
+                   src="{{ user_info.profile_image }}">
+              </div>
+          </div>
+
+      </div>
+  </nav>
+
+  <!-- Modal -->
+  <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLabel">피드 만들기</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body" style="display:flex; flex-direction: row">
+                  <div id="image_upload" style="width: 50%; height: 300px; background-color: silver">
+                      사진올리는 곳
+                  </div>
+                  <div style="width: 50%; height: 300px">
+                      <div class="mb-3">
+                          <textarea id="input_content" class="form-control" id="exampleFormControlTextarea1" style="height: 300px"></textarea>
+                      </div>
+                  </div>
+              </div>
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                  <button id="button_save" type="button" class="btn btn-primary">Save changes</button>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; align-items: center; padding-top: 60px">
+    {% for i in data_list %}
+    <div style="width: 400px; border: solid 1px silver; margin-top: 30px">
+        <!-- 프로필 사진 + 닉네임 -->
+        <div style="display: flex; flex-direction: row; align-items: center">
+            <div>
+                <img class="box" src="{{ i.profile_image }}">
+            </div>
+            <div>
+                {{ i.nickname }}
+            </div>
+        </div>
+        <!-- 피드 사진 -->
+        <div>
+            <img style="width: 400px; height: 300px; object-fit: contain"
+                 src="{% get_media_prefix %}{{ i.image }}">
+        </div>
+        <!-- 아이콘 삽입 -->
+        <div style="display: flex; flex-direction:row">
+            <div><span class="favorite material-icons-outlined"
+                       style="cursor: pointer; color: red" feed_id="{{ i.id }}">
+                {% if i.is_like %}
+                    favorite
+                {% else %}
+                    favorite_border
+                {% endif %}
+            </span></div>
+            <div><span class="material-icons-outlined">chat</span></div>
+            <div><span class="material-icons-outlined">send</span></div>
+            <div><span class="bookmark material-icons-outlined"
+                       style="cursor: pointer" feed_id="{{ i.id }}">
+                {% if i.is_bookmark %}
+                    bookmark
+                {% else %}
+                    bookmark_border
+                {% endif %}
+            </span></div>
+        </div>
+
+        <!-- likes, Feed 내용 -->
+        <div style="font-size: 12px">
+            aaa 외 39명이 좋아합니다.
+        </div>
+        <div>
+            {{ i.content }}
+        </div>
+
+        <div>
+        {% for j in i.reply_list %}
+            <div style="font-size: 13px"><b>{{ j.nickname }}</b> {{ j.content }}</div>
+        {% endfor %}
+        </div>
+
+        <!-- 댓글입력창 삽입 -->
+        <div style="display: flex; flex-direction:row; align-items: center">
+            <div style="display: flex; flex-direction: row; width: 100%">
+                <input class="form-control form-control-sm" type="text" placeholder="댓글입력" aria-label=".form-control-sm example">
+                <span type="button" class="write_reply" feed_id = "{{ i.id }}"
+                      style="width: 50px; text-align: center">
+                    게시
+                </span>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+  </div>
+
+
+    <!-- JQuery로 모달 버튼 동작 만들기 -->
+    <script>
+        $('.favorite').click(function () {
+            const email = "{{ user_info.email }}";
+            const feed_id = $(this).attr('feed_id');
+
+            if ($.trim($(this).html()) == 'favorite_border') {
+                // '좋아요' 누름
+                $(this).html('favorite')
+
+                $.ajax({
+                    url: "http://127.0.0.1:8000/like/",
+                    method: "POST",
+                    data: {
+                        email: email,
+                        feed_id: feed_id
+                    },
+                    success: function (data) {
+                        console.log("성공");
+                    },
+                    error: function (request, status, error) {
+                        console.log("에러");
+                    },
+                    complete: function () {
+                        console.log("무조건실행");
+                    }
+                });
+            } else {
+                // '좋아요' 취소
+                $(this).html('favorite_border')
+
+                $.ajax({
+                    url: "http://127.0.0.1:8000/cancellike/",
+                    method: "POST",
+                    data: {
+                        email: email,
+                        feed_id: feed_id
+                    },
+                    success: function (data) {
+                        console.log("성공");
+                    },
+                    error: function (request, status, error) {
+                        console.log("에러");
+                    },
+                    complete: function () {
+                        console.log("무조건실행");
+                    }
+                });
+            }
+        });
+
+        $('.bookmark').click(function (){
+            const email = "{{ user_info.email }}";
+            const feed_id = $(this).attr('feed_id');
+
+            if($.trim($(this).html()) == 'bookmark_border'){
+                $(this).html('bookmark')
+                $.ajax({
+                    url: "http://127.0.0.1:8000/bookmark/",
+                    method: "POST",
+                    data: {
+                        email: email,
+                        feed_id: feed_id
+                    },
+                    success: function (data) {
+                        console.log("성공");
+                    },
+                    error: function (request, status, error) {
+                        console.log("에러");
+                    },
+                    complete: function () {
+                        console.log("무조건실행");
+                    }
+                });
+            }
+            else{
+                $(this).html('bookmark_border')
+                $.ajax({
+                    url: "http://127.0.0.1:8000/cancelbookmark/",
+                    method: "POST",
+                    data: {
+                        email: email,
+                        feed_id: feed_id
+                    },
+                    success: function (data) {
+                        console.log("성공");
+                    },
+                    error: function (request, status, error) {
+                        console.log("에러");
+                    },
+                    complete: function () {
+                        console.log("무조건실행");
+                    }
+                });
+            }
+        });
+
+        $('.write_reply').click(function(){
+            const content = $(this).prev().val();
+            const nickname = "{{ user_info.nickname }}";
+            const feed_id = $(this).attr('feed_id');
+
+            $.ajax({
+                url: "http://127.0.0.1:8000/reply/",
+                method: "POST",
+                data: {
+                    content: content,
+                    nickname: nickname,
+                    feed_id: feed_id
+                },
+                success: function (data) {
+                    console.log("성공");
+                    alert("댓글쓰기 성공");
+                },
+                error: function (request, status, error) {
+                    console.log("에러");
+                    alert("댓글쓰기 실패");
+                },
+                complete: function () {
+                    console.log("무조건실행");
+                }
+            });
+
+            $(this).parent().parent().prev().append('<div style="font-size: 13px"><b>'+ nickname +'</b> '+ content +' </div>')
+            $(this).prev().val('');
+
+        })
+
+        $('#move_join').click(function (){
+           location.href = 'http://127.0.0.1:8000/join/'
+        });
+
+        $('#button_save').click(function (){
+            console.log('버튼이 클릭되었습니다.');
+
+            <!-- 사용자가 입력한 글과 닉네임, 프로필사진 등을 상수로 저장 -->
+            const content = $('#input_content').val();
+            const nickname = "{{ user_info.nickname }}";
+            const profile_image = "{{ user_info.profile_image }}";
+
+            <!-- 사용자가 올리는 이미지와 상수로 받은 정보를 폼 데이터로 저장 -->
+            let fd = new FormData();
+
+            if(files == null)
+            return
+
+            fd.append('file', files[0]);
+            fd.append('content', content);
+            fd.append('profile_image', profile_image);
+            fd.append('nickname', nickname);
+
+            <!-- REST API를 호출할 때의 동작을 AJAX로 구성 -->
+            $.ajax({
+                url: 'http://127.0.0.1:8000/test',
+                method: 'POST',
+                data: fd,
+                processData: false,
+                contentType: false,
+                success: function (data){
+                    console.log('성공했습니다.')
+                    location.href = 'http://127.0.0.1:8000/main/'
+                },
+                error: function (request, status, error){
+                    console.log('실패했습니다.')
+                },
+                complete: function (){
+                    console.log('일단 끝났습니다.')
+                }
+                });
+        });
+
+        $('#image_upload')
+            .on("dragover", dragOver)
+            .on("dragleave", dragOver)
+            .on("drop", drop)
+
+        function dragOver(e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            if (e.type == "dragover") {
+                $(e.target).css({
+                    "background-color": "black",
+                    "outline-offset": "-20px"
+                });
+            } else {
+                $(e.target).css({
+                    "background-color": "white",
+                    "outline-offset": "-10px"
+                });
+            }
+        };
+
+        let files;
+
+        function drop(e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            e.dataTransfer = e.originalEvent.dataTransfer;
+            files = e.dataTransfer.files;
+
+            console.log('업로드했습니다.' + files[0]);
+
+            if (files[0].type.match(/image.*/)) {
+                $('#image_upload').css({
+                    "background-image": "url(" + window.URL.createObjectURL(files[0]) + ")",
+                    "outline": "none",
+                    "background-size": "contain",
+                    "background-repeat": "no-repeat",
+                    "background-position": "center"
+                });
+            }
+        }
+    </script>
+
+    <!-- Option 1: Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+
+    <!-- Option 2: Separate Popper and Bootstrap JS -->
+    <!--
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
+    -->
+  </body>
+</html>
+
+
